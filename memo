@@ -1,4 +1,38 @@
-View以下は$を使わない
- - this.$を使う
-View.renderは名前を決めているだけ
- - レンダリングの処理をrender関数に定義するという約束
+- View以下は$を使わない
+-- this.$を使う
+- View.renderは名前を決めているだけ
+-- レンダリングの処理をrender関数に定義するという約束
+- onよりlistenToを使う
+-- onはメモリリークが起きやすい
+-- destotyでoffする必要がある
+-- listenToを使えばstopListeningを呼ぶだけで全てのlistenToを解除できる
+- _.chain
+-- underscoreのメソッドを連続して使いたいときに使用
+
+- Modelに対応したViewを作ると保守性が高い
+
+- collectionの子供がchangeイベントを発火したらcollectionのchangeイベントも発火する
+    ```
+    this.listenTo(this.collection, 'change', this.close);
+    ```
+- space区切りで複数イベント指定可能
+    ```
+    this.listenTo(this.collection, 'add remove change', this.close);
+    ```
+
+- Modelを介さないView同士の連携はMediator(仲介者)に任せる
+    ```
+    App.mediator = _.extends({}, Backbone.Events);
+    App.mediator.on('hoge', function(foo) {
+        console.log(foo); // => foo
+    });
+    App.mediator.trigger('hoge', 'foo')
+    ```
+
+- viewのなかで
+
+    ```
+    this.listenTo(App.mediator, 'dialog:open', this.open);
+    ```
+  のようにしてeventsを登録
+

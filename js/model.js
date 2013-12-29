@@ -22,6 +22,11 @@ App.Schedule = Backbone.Model.extend({
 
     dateFormat: function(f) {
         return this.get('datetime').format(f);
+    },
+
+    parse: function(attrs) {
+        attrs.datetime = moment(attrs.datetime);
+        return attrs;
     }
 
 });
@@ -29,12 +34,19 @@ App.Schedule = Backbone.Model.extend({
 App.Schedules = Backbone.Collection.extend({
     model: App.Schedule,
 
+    localStorage: new Backbone.LocalStorage('calendar'),
+
     findByDate: function(date) {
         var format = 'YYYY-MM-DD';
         var targetDate = moment(date).format(format);
 
-        return this.select(function(model) {
-            return model.dateFormat(format) === targetDate;
-        });
+        return this.chain()
+            .select(function(model) {
+                return model.dateFormat(format) === targetDate;
+            })
+            .sortBy(function(model) {
+                return model.get('datetime').valueOf();
+            })
+            .value();
     }
 });
