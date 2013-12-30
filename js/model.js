@@ -1,15 +1,11 @@
 App.Schedule = Backbone.Model.extend({
 
     defaults: {
-        title: null,
+        title: 'タイトル未定',
         datetime: null
     },
 
     validate: function(attrs) {
-        if (!attrs.title) {
-            return 'タイトルは必須です';
-        }
-
         if (!attrs.datetime) {
             return '日付は必須です';
         }
@@ -27,6 +23,10 @@ App.Schedule = Backbone.Model.extend({
     parse: function(attrs) {
         attrs.datetime = moment(attrs.datetime);
         return attrs;
+    },
+
+    emptyTitle: function() {
+        return this.get('title') === this.defaults.title;
     }
 
 });

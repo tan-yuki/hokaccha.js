@@ -86,8 +86,13 @@ App.CalendarView = Backbone.View.extend({
 App.CalendarCellView = Backbone.View.extend({
     tagName: 'td',
 
-    template: '<div class="calendar-date"><%= date.format("MM/DD") %></div>' +
-    '<ul class="calendar-list"></ul>',
+    events: {
+        'click': 'onClick'
+    },
+
+    template: '<div class="calendar-date" data-date="<%= date.format("YYYY/MM/DD") %>">' +
+              '<%= date.format("MM/DD") %></div>' +
+              '<ul class="calendar-list"></ul>',
 
     initialize: function(options) {
         this.date = options.date;
@@ -106,6 +111,16 @@ App.CalendarCellView = Backbone.View.extend({
             var item = new App.CalendarItemView({ model: model });
             $list.append(item.el);
         });
+    },
+
+    onClick: function(e) {
+        e.stopPropagation();
+
+        var model = new App.Schedule({
+            datetime: moment(this.$('.calendar-date').data('date'))
+        });
+        this.collection.add(model, { silent: true })
+        App.mediator.trigger('dialog:open', model);
     }
 });
 
@@ -132,7 +147,8 @@ App.CalendarItemView = Backbone.View.extend({
         this.$el.html(html);
     },
 
-    onClick: function() {
+    onClick: function(e) {
+        e.stopPropagation();
         App.mediator.trigger('dialog:open', this.model);
     }
 });
@@ -161,9 +177,14 @@ App.FormDialogView = Backbone.View.extend({
 
     render: function() {
         if (this.model) {
-            this.$('input[name="title"]').val(this.model.get('title'));
             this.$('input[name="datetime"]').val(this.model.dateFormat('YYYY-MM-DDTHH:mm'));
-            this.$('.dialog-removeBtn').show();
+            if (this.model.emptyTitle()) {
+                this.$('input[name="title"]').val('');
+                this.$('.dialog-removeBtn').hide();
+            } else {
+                this.$('input[name="title"]').val(this.model.get('title'));
+                this.$('.dialog-removeBtn').show();
+            }
         } else {
             this.$('input[name="title"]').val('');
             this.$('input[name="datetime"]').val('');
